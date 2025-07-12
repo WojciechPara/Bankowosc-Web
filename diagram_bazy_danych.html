@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram Bazy Danych - Bankowość Elektroniczna</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .diagram-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 40px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .table {
+            background: #f8f9fa;
+            border: 3px solid #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 280px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .connection-line {
+            position: absolute;
+            background: #007bff;
+            z-index: 1;
+        }
+        
+        .connection-line.users-transactions {
+            width: 2px;
+            height: 60px;
+            left: 50%;
+            top: 200px;
+            transform: translateX(-50%);
+        }
+        
+        .connection-line.users-cards {
+            width: 2px;
+            height: 60px;
+            right: 50%;
+            top: 200px;
+            transform: translateX(50%);
+        }
+        
+        .connection-arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #007bff;
+        }
+        
+        .connection-arrow.users-transactions {
+            left: 50%;
+            top: 260px;
+            transform: translateX(-50%);
+        }
+        
+        .connection-arrow.users-cards {
+            right: 50%;
+            top: 260px;
+            transform: translateX(50%);
+        }
+        
+        .connection-label {
+            position: absolute;
+            background: #fff;
+            padding: 5px 10px;
+            border: 2px solid #007bff;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #007bff;
+            white-space: nowrap;
+        }
+        
+        .connection-label.users-transactions {
+            left: 50%;
+            top: 270px;
+            transform: translateX(-50%);
+        }
+        
+        .connection-label.users-cards {
+            right: 50%;
+            top: 270px;
+            transform: translateX(50%);
+        }
+        
+
+        
+        .table-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 7px 7px 0 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+        
+        .field:last-child {
+            border-bottom: none;
+        }
+        
+        .field-name {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .field-type {
+            color: #6c757d;
+            font-size: 12px;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .pk {
+            background: #28a745;
+            color: white;
+        }
+        
+        .fk {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .uk {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .relationships {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .relationship {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px 25px;
+            font-weight: 500;
+            color: #856404;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            color: #007bff;
+        }
+        
+        .legend {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .legend h3 {
+            margin-top: 0;
+            color: #495057;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .description {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .description h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        
+        .description ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .description li {
+            margin: 5px 0;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 Diagram Bazy Danych</h1>
+        <h2 style="text-align: center; color: #666; margin-bottom: 30px;">Bankowość Elektroniczna - Wersja Webowa</h2>
+        
+        <div class="diagram-container">
+            <!-- Linie połączeń -->
+            <div class="connection-line users-transactions"></div>
+            <div class="connection-arrow users-transactions"></div>
+            <div class="connection-label users-transactions">1:N</div>
+            
+            <div class="connection-line users-cards"></div>
+            <div class="connection-arrow users-cards"></div>
+            <div class="connection-label users-cards">1:N</div>
+            
+            <!-- Tabela USERS -->
+            <div class="table">
+                <div class="table-header">USERS</div>
+                <div class="field">
+                    <span class="field-name">id</span>
+                    <span class="field-type pk">PK</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">imie</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">nazwisko</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">ulica</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">kodPocztowyMiasto</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">email</span>
+                    <span class="field-type uk">UK</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">numerTelefonu</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">login</span>
+                    <span class="field-type uk">UK</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">haslo</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">numerRachunku</span>
+                    <span class="field-type uk">UK</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">stanKonta</span>
+                    <span class="field-type">REAL</span>
+                </div>
+            </div>
+            
+            <!-- Tabela TRANSAKCJE -->
+            <div class="table">
+                <div class="table-header">TRANSAKCJE</div>
+                <div class="field">
+                    <span class="field-name">id</span>
+                    <span class="field-type pk">PK</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">userId</span>
+                    <span class="field-type fk">FK</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">dataTransakcji</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">kwota</span>
+                    <span class="field-type">REAL</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">odbiorca</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">numer</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">typ</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+            </div>
+            
+            <!-- Tabela KARTY -->
+            <div class="table">
+                <div class="table-header">KARTY</div>
+                <div class="field">
+                    <span class="field-name">id</span>
+                    <span class="field-type pk">PK</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">userId</span>
+                    <span class="field-type fk">FK</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">numerKarty</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">typ</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+                <div class="field">
+                    <span class="field-name">dataWaznosci</span>
+                    <span class="field-type">TEXT</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Relacje -->
+        <div class="relationships">
+            <div class="relationship">
+                <span>USERS</span>
+                <span class="arrow">1</span>
+                <span>───</span>
+                <span class="arrow">N</span>
+                <span>TRANSAKCJE</span>
+                <span style="margin-left: 10px; font-size: 14px;">(jeden użytkownik może mieć wiele transakcji)</span>
+            </div>
+            
+            <div class="relationship">
+                <span>USERS</span>
+                <span class="arrow">1</span>
+                <span>───</span>
+                <span class="arrow">N</span>
+                <span>KARTY</span>
+                <span style="margin-left: 10px; font-size: 14px;">(jeden użytkownik może mieć wiele kart)</span>
+            </div>
+        </div>
+        
+        <!-- Opis tabel -->
+        <div class="description">
+            <h3>📋 Opis tabel</h3>
+            <ul>
+                <li><strong>USERS</strong> - główna tabela przechowująca dane użytkowników bankowych</li>
+                <li><strong>TRANSAKCJE</strong> - historia wszystkich operacji bankowych użytkowników</li>
+                <li><strong>KARTY</strong> - karty bankowe przypisane do użytkowników</li>
+            </ul>
+        </div>
+        
+        <!-- Legenda -->
+        <div class="legend">
+            <h3>🔑 Legenda</h3>
+            <div class="legend-item">
+                <div class="legend-color pk"></div>
+                <span><strong>PK</strong> - Primary Key (Klucz główny)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color fk"></div>
+                <span><strong>FK</strong> - Foreign Key (Klucz obcy)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color uk"></div>
+                <span><strong>UK</strong> - Unique Key (Klucz unikalny)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #6c757d;"></div>
+                <span><strong>TEXT/REAL</strong> - Typ danych</span>
+            </div>
+        </div>
+        
+        <!-- Ograniczenia -->
+        <div class="description">
+            <h3>🔒 Ograniczenia bazy danych</h3>
+            <ul>
+                <li><strong>UNIQUE</strong> - email, login, numerRachunku w tabeli users</li>
+                <li><strong>FOREIGN KEY</strong> - userId w tabelach transakcje i karty</li>
+                <li><strong>NOT NULL</strong> - wszystkie wymagane pola</li>
+                <li><strong>AUTO INCREMENT</strong> - id w wszystkich tabelach</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html> 
